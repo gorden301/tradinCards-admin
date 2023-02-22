@@ -185,7 +185,9 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 					<el-table-column prop="gradeLevel" label="评级档位" align="center" />
 					<el-table-column prop="cardImgs" label="图片" align="center">
 						<template #default="scope">
-							<img v-for="(item, index) in scope.row.cardImgs" :src="item">
+							<div flex>
+								<img v-for="(item, index) in scope.row.fileList" w-40 h-40 :src="item?.tempFileURL" :key="index" />
+							</div>
 						</template>
 					</el-table-column>
 					<el-table-column prop="createTime" label="创建时间" align="center" />
@@ -199,15 +201,25 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 				</el-table>
 			</div>
 			<div class="pager-wrapper">
-				<el-pagination background :layout="paginationData.layout" :page-sizes="paginationData.pageSizes"
-					:total="paginationData.total" :page-size="paginationData.pageSize"
-					:currentPage="paginationData.currentPage" @size-change="handleSizeChange"
-					@current-change="handleCurrentChange" />
+				<el-pagination
+					background
+					:layout="paginationData.layout"
+					:page-sizes="paginationData.pageSizes"
+					:total="paginationData.total"
+					:page-size="paginationData.pageSize"
+					:currentPage="paginationData.currentPage"
+					@size-change="handleSizeChange"
+					@current-change="handleCurrentChange"
+				/>
 			</div>
 		</el-card>
 		<!-- 新增/修改 -->
-		<el-dialog v-model="dialogVisible" :title="currentUpdateId === undefined ? '新增用户' : '修改用户'" @close="resetForm"
-			width="30%">
+		<el-dialog
+			v-model="dialogVisible"
+			:title="currentUpdateId === undefined ? '新增用户' : '修改用户'"
+			@close="resetForm"
+			width="30%"
+		>
 			<el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
 				<el-form-item prop="username" label="用户名">
 					<el-input v-model="formData.username" placeholder="请输入" />
