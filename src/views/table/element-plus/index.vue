@@ -173,7 +173,14 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 			<div class="table-wrapper">
 				<el-table :data="tableData">
 					<el-table-column type="selection" width="50" align="center" />
-					<el-table-column prop="nickName" label="用户名" align="center" />
+					<el-table-column prop="nickName" label="用户" align="center">
+						<template #default="scope">
+							<div flex>
+								<img v-if="scope.row.avatarHttpsUrl" :src="scope.row.avatarHttpsUrl" w-10 h-10 />
+								<div>{{ scope.row.nickName }}</div>
+							</div>
+						</template>
+					</el-table-column>
 					<!-- <el-table-column prop="roles" label="角色" align="center">
 							<template #default="scope">
 								<el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
@@ -190,6 +197,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 							</div>
 						</template>
 					</el-table-column>
+					<el-table-column prop="cardNumber" label="卡片数量" align="center" />
 					<el-table-column prop="createTime" label="创建时间" align="center" />
 					<el-table-column prop="comment" label="备注" align="center" />
 					<el-table-column fixed="right" label="操作" width="150" align="center">
