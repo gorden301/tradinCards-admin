@@ -5,6 +5,8 @@ import { getOrderList } from "@/api/order"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
+import { orderStatusMap } from "./constant"
+import { formatDateTime } from "@/utils/index"
 
 const loading = ref<boolean>(false)
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
@@ -198,7 +200,20 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 						</template>
 					</el-table-column>
 					<el-table-column prop="cardNumber" label="卡片数量" align="center" />
-					<el-table-column prop="createTime" label="创建时间" align="center" />
+					<el-table-column prop="orderStatus" label="订单状态" align="center">
+						<template #default="scope">
+							<div>
+								{{ orderStatusMap[scope.row.orderStatus] }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column prop="createTime" label="创建时间" align="center">
+						<template #default="scope">
+							<div>
+								{{ formatDateTime(scope.row.createTime) }}
+							</div>
+						</template>
+					</el-table-column>
 					<el-table-column prop="comment" label="备注" align="center" />
 					<el-table-column fixed="right" label="操作" width="150" align="center">
 						<template #default="scope">

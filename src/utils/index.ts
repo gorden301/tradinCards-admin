@@ -2,7 +2,7 @@ import dayjs from "dayjs"
 
 /** 格式化时间 */
 export const formatDateTime = (time: string | number | Date) => {
-	if (!time) { 
+	if (!time) {
 		return "N/A"
 	}
 	const date = new Date(time)
