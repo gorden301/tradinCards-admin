@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { reactive, ref, watch, onMounted } from "vue"
 import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table"
-import { getOrderList } from "@/api/order"
+import { getOrderList, updateOrder } from "@/api/order"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { orderStatusMap } from "./constant"
+import { orderStatusMap, orderStatusOptions } from "./constant"
 import { formatDateTime } from "@/utils/index"
 
 const loading = ref<boolean>(false)
@@ -14,10 +14,7 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 //#region 增
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
-const formData = reactive({
-	username: "",
-	password: ""
-})
+let formData = reactive<Record<string, any>>({})
 const formRules: FormRules = reactive({
 	username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
 	password: [{ required: true, trigger: "blur", message: "请输入密码" }]
@@ -26,36 +23,54 @@ const formRules: FormRules = reactive({
 const getOrderData = async () => {
 	const getRes: any = await getOrderList()
 	if (getRes.code === 0) {
-		tableData.value = getRes.data
+		tableData.value = getRes.data?.map((item: any) => {
+			item.createTime = formatDateTime(item.createTime)
+			return item
+		})
 	}
 }
 
-const handleCreate = () => {
-	formRef.value?.validate((valid: boolean) => {
-		if (valid) {
-			if (currentUpdateId.value === undefined) {
-				createTableDataApi({
-					username: formData.username,
-					password: formData.password
-				}).then(() => {
-					ElMessage.success("新增成功")
-					dialogVisible.value = false
-					getTableData()
-				})
-			} else {
-				updateTableDataApi({
-					id: currentUpdateId.value,
-					username: formData.username
-				}).then(() => {
-					ElMessage.success("修改成功")
-					dialogVisible.value = false
-					getTableData()
-				})
-			}
-		} else {
-			return false
-		}
+const handleCreate = async () => {
+	const { customerComment, orderStatus, _id } = formData
+	debugger
+	const updateRes: any = await updateOrder({
+		customerComment,
+		orderStatus,
+		_id
 	})
+	debugger
+	if (updateRes?.data?.modified > 0) {
+		ElMessage.success("更新成功")
+		dialogVisible.value = false
+		getOrderData()
+	} else {
+		ElMessage.success("更新失败")
+	}
+	// formRef.value?.validate((valid: boolean) => {
+	// 	if (valid) {
+	// 		if (currentUpdateId.value === undefined) {
+	// 			createTableDataApi({
+	// 				username: formData.username,
+	// 				password: formData.password
+	// 			}).then(() => {
+	// 				ElMessage.success("新增成功")
+	// 				dialogVisible.value = false
+	// 				getTableData()
+	// 			})
+	// 		} else {
+	// 			updateTableDataApi({
+	// 				id: currentUpdateId.value,
+	// 				username: formData.username
+	// 			}).then(() => {
+	// 				ElMessage.success("修改成功")
+	// 				dialogVisible.value = false
+	// 				getTableData()
+	// 			})
+	// 		}
+	// 	} else {
+	// 		return false
+	// 	}
+	// })
 }
 const resetForm = () => {
 	currentUpdateId.value = undefined
@@ -82,9 +97,10 @@ const handleDelete = (row: any) => {
 //#region 改
 const currentUpdateId = ref<undefined | string>(undefined)
 const handleUpdate = (row: any) => {
-	currentUpdateId.value = row.id
-	formData.username = row.username
-	formData.password = row.password
+	row.orderStatus = row.orderStatus?.toString()
+	formData = row
+	// formData.username = row.username
+	// formData.password = row.password
 	dialogVisible.value = true
 }
 //#endregion
@@ -210,15 +226,16 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 					<el-table-column prop="createTime" label="创建时间" align="center">
 						<template #default="scope">
 							<div>
-								{{ formatDateTime(scope.row.createTime) }}
+								{{ scope.row.createTime }}
 							</div>
 						</template>
 					</el-table-column>
 					<el-table-column prop="comment" label="备注" align="center" />
 					<el-table-column fixed="right" label="操作" width="150" align="center">
 						<template #default="scope">
-							<el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
-							<el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
+							<!-- <span v-if="scope.row.orderStatus === 1">确认订单</span> -->
+							<el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">查看详情及编辑</el-button>
+							<!-- <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button> -->
 						</template>
 					</el-table-column>
 				</el-table>
@@ -237,18 +254,47 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 			</div>
 		</el-card>
 		<!-- 新增/修改 -->
-		<el-dialog
-			v-model="dialogVisible"
-			:title="currentUpdateId === undefined ? '新增用户' : '修改用户'"
-			@close="resetForm"
-			width="30%"
-		>
-			<el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
-				<el-form-item prop="username" label="用户名">
-					<el-input v-model="formData.username" placeholder="请输入" />
+		<el-dialog v-model="dialogVisible" title="订单详情" @close="resetForm" width="60%">
+			<el-form ref="formRef" :model="formData" :rules="formRules" label-width="150px" label-position="left">
+				<el-form-item prop="nickName" label="用户名及手机">
+					<span mr-5>{{ formData.nickName }}</span>
+					<span>{{ formData.phoneNumer }}</span>
 				</el-form-item>
-				<el-form-item prop="password" label="密码">
-					<el-input v-model="formData.password" placeholder="请输入" />
+				<el-form-item prop="grade" label="评级公司及档位">
+					<span mr-5>{{ formData.gradeCompany }}</span>
+					<span>{{ formData.gradeLevel }}</span>
+				</el-form-item>
+				<el-form-item prop="cardNumber" label="卡片数量">
+					<span>{{ formData.cardNumber }}</span>
+				</el-form-item>
+				<el-form-item prop="cardImgs" label="图片">
+					<el-image
+						:preview-src-list="formData.fileList.map((item) => item.tempFileURL)"
+						v-for="(item, index) in formData.fileList"
+						style="width: 150px; height: 150px; margin-right: 40px"
+						mr-10
+						:key="index"
+						:src="item.tempFileURL"
+					/>
+				</el-form-item>
+				<el-form-item prop="createTime" label="创建时间">
+					<span>{{ formData.createTime }}</span>
+				</el-form-item>
+				<el-form-item prop="cardImgs" label="备注">
+					<span>{{ formData.comment }}</span>
+				</el-form-item>
+				<el-form-item prop="orderStatus" label="订单状态">
+					<el-select v-model="formData.orderStatus">
+						<el-option
+							v-for="(item, index) in orderStatusOptions"
+							:key="index"
+							:value="item.value"
+							:label="item.label"
+						/>
+					</el-select>
+				</el-form-item>
+				<el-form-item prop="customerComment" label="客服留言">
+					<el-input v-model="formData.customerComment" :rows="4" type="textarea" placeholder="请输入留言..." />
 				</el-form-item>
 			</el-form>
 			<template #footer>
