@@ -5,7 +5,7 @@ import { getOrderList, updateOrder } from "@/api/order"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { orderStatusMap, orderStatusOptions } from "./constant"
+import { orderStatusMap, orderStatusOptions, orderType, sellType } from "./constant"
 import { formatDateTime } from "@/utils/index"
 
 const loading = ref<boolean>(false)
@@ -191,6 +191,13 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 			<div class="table-wrapper">
 				<el-table :data="tableData">
 					<el-table-column type="selection" width="50" align="center" />
+					<el-table-column prop="orderType" label="订单类型" align="center">
+						<template #default="scope">
+							<div flex>
+								<div>{{ orderType[scope.row.orderType] }}</div>
+							</div>
+						</template>
+					</el-table-column>
 					<el-table-column prop="nickName" label="用户" align="center">
 						<template #default="scope">
 							<div flex>
@@ -260,13 +267,26 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 					<span mr-5>{{ formData.nickName }}</span>
 					<span>{{ formData.phoneNumer }}</span>
 				</el-form-item>
-				<el-form-item prop="grade" label="评级公司及档位">
-					<span mr-5>{{ formData.gradeCompany }}</span>
-					<span>{{ formData.gradeLevel }}</span>
-				</el-form-item>
-				<el-form-item prop="cardNumber" label="卡片数量">
-					<span>{{ formData.cardNumber }}</span>
-				</el-form-item>
+				<template v-if="formData.orderType == 1">
+					<el-form-item prop="grade" label="评级公司及档位">
+						<span mr-5>{{ formData.gradeCompany }}</span>
+						<span>{{ formData.gradeLevel }}</span>
+					</el-form-item>
+					<el-form-item prop="cardNumber" label="卡片数量">
+						<span>{{ formData.cardNumber }}</span>
+					</el-form-item>
+				</template>
+				<template v-if="formData.orderType == 2">
+					<el-form-item prop="sellType" label="代卖模式">
+						<span>{{ sellType[formData.sellType] }}</span>
+					</el-form-item>
+					<el-form-item v-if="formData.sellType == 1" prop="sellDays" label="拍卖天数">
+						<span>{{ formData.sellDays }}</span>
+					</el-form-item>
+					<el-form-item v-if="formData.sellType != 1" prop="hopePrice" label="期望价格">
+						<span>{{ formData.hopePrice }}</span>
+					</el-form-item>
+				</template>
 				<el-form-item prop="cardImgs" label="图片">
 					<el-image
 						:preview-src-list="formData.fileList.map((item) => item.tempFileURL)"

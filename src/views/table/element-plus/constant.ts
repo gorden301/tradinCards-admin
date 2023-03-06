@@ -34,4 +34,15 @@ const orderStatusOptions = [
 	}
 ]
 
-export { orderStatusMap, orderStatusOptions }
+const orderType = {
+	1: "评级",
+	2: "代卖"
+}
+
+const sellType = {
+	1: "拍卖",
+	2: "议价",
+	3: "一口价"
+}
+
+export { orderStatusMap, orderStatusOptions, orderType, sellType }
