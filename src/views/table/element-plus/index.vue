@@ -27,15 +27,15 @@ const getOrderData = async () => {
 		page: paginationData.currentPage
 	})
 	loading.value = false
-	if(newRes.code === 0) {
+	if (newRes.code === 0) {
 		paginationData.total = newRes.data?.total
 		tableData.value = newRes.data?.data?.map((item: any) => {
-			item.createTime = formatDateTime(item.createTime)
+			item.createTime = formatDateTime(item.createTime?.$date)
 			return item
 		})
 		// paginationData.currentPage = paginationData.currentPage + 1
 	}
-	console.log('newRes', newRes)
+	console.log("newRes", newRes)
 	// if (getRes.code === 0) {
 	// 	tableData.value = getRes.data?.map((item: any) => {
 	// 		item.createTime = formatDateTime(item.createTime)
