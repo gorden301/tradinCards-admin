@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { reactive, ref, watch, onMounted } from "vue"
 import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table"
-import { getOrderList, updateOrder } from "@/api/order"
+import { getOrderList, updateOrder, getNewOrderList } from "@/api/order"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
@@ -21,13 +21,27 @@ const formRules: FormRules = reactive({
 })
 
 const getOrderData = async () => {
-	const getRes: any = await getOrderList()
-	if (getRes.code === 0) {
-		tableData.value = getRes.data?.map((item: any) => {
+	loading.value = true
+	// const getRes: any = await getOrderList()
+	const newRes: any = await getNewOrderList({
+		page: paginationData.currentPage
+	})
+	loading.value = false
+	if(newRes.code === 0) {
+		paginationData.total = newRes.data?.total
+		tableData.value = newRes.data?.data?.map((item: any) => {
 			item.createTime = formatDateTime(item.createTime)
 			return item
 		})
+		// paginationData.currentPage = paginationData.currentPage + 1
 	}
+	console.log('newRes', newRes)
+	// if (getRes.code === 0) {
+	// 	tableData.value = getRes.data?.map((item: any) => {
+	// 		item.createTime = formatDateTime(item.createTime)
+	// 		return item
+	// 	})
+	// }
 }
 
 const handleCreate = async () => {
@@ -159,7 +173,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 
 <template>
 	<div class="app-container">
-		<el-card v-loading="loading" shadow="never" class="search-wrapper">
+		<el-card shadow="never" class="search-wrapper">
 			<el-form ref="searchFormRef" :inline="true" :model="searchData">
 				<el-form-item prop="username" label="用户名">
 					<el-input v-model="searchData.username" placeholder="请输入" />
@@ -251,12 +265,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 				<el-pagination
 					background
 					:layout="paginationData.layout"
-					:page-sizes="paginationData.pageSizes"
 					:total="paginationData.total"
-					:page-size="paginationData.pageSize"
+					:page-size="10"
 					:currentPage="paginationData.currentPage"
 					@size-change="handleSizeChange"
-					@current-change="handleCurrentChange"
+					@current-change="handleCurrentChange($event, getOrderData)"
 				/>
 			</div>
 		</el-card>

@@ -10,6 +10,16 @@ export function getOrderList() {
 	})
 }
 
+/** 分页订单列表 */
+export function getNewOrderList(data: any) {
+	return request({
+		// baseUrl,
+		url: "order/newOrderList",
+		method: "post",
+        data
+	})
+}
+
 /*
     更新订单列表
 */
