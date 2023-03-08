@@ -45,14 +45,13 @@ const getOrderData = async () => {
 }
 
 const handleCreate = async () => {
-	const { customerComment, orderStatus, _id } = formData
-	debugger
+	const { customerComment, orderStatus, _id, sellNumber } = formData
 	const updateRes: any = await updateOrder({
 		customerComment,
 		orderStatus,
-		_id
+		_id,
+		sellNumber
 	})
-	debugger
 	if (updateRes?.data?.modified > 0) {
 		ElMessage.success("更新成功")
 		dialogVisible.value = false
@@ -325,6 +324,9 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 							:label="item.label"
 						/>
 					</el-select>
+				</el-form-item>
+				<el-form-item v-if="formData.orderType == 2" prop="sellNumber" label="ebay上架物品编号">
+					<el-input v-model="formData.sellNumber" placeholder="请输入ebay上架物品编号" />
 				</el-form-item>
 				<el-form-item prop="customerComment" label="客服留言">
 					<el-input v-model="formData.customerComment" :rows="4" type="textarea" placeholder="请输入留言..." />
