@@ -99,6 +99,14 @@ function createRequestFunction(service: AxiosInstance) {
 			baseURL: import.meta.env.VITE_BASE_API,
 			data: {}
 		}
+		// 去除请求body里为空的参数
+		if(config?.data) {
+			for(let i in config.data) {
+				if(!config.data[i]) {
+					delete config.data[i]
+				}
+			}
+		}
 		return service(Object.assign(configDefault, config))
 	}
 }

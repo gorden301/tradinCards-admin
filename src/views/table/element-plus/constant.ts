@@ -39,10 +39,10 @@ const orderType = {
 	2: "代卖"
 }
 
-const sellType = {
+const sellTypes = {
 	1: "拍卖",
 	2: "议价",
 	3: "一口价"
 }
 
-export { orderStatusMap, orderStatusOptions, orderType, sellType }
+export { orderStatusMap, orderStatusOptions, orderType, sellTypes }

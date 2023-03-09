@@ -5,7 +5,7 @@ import { getOrderList, updateOrder, getNewOrderList } from "@/api/order"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { orderStatusMap, orderStatusOptions, orderType, sellType } from "./constant"
+import { orderStatusMap, orderStatusOptions, orderType, sellTypes } from "./constant"
 import { formatDateTime } from "@/utils/index"
 
 const loading = ref<boolean>(false)
@@ -15,16 +15,17 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 let formData = reactive<Record<string, any>>({})
-const formRules: FormRules = reactive({
-	username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
-	password: [{ required: true, trigger: "blur", message: "请输入密码" }]
-})
+// const formRules: FormRules = reactive({
+// 	username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
+// 	password: [{ required: true, trigger: "blur", message: "请输入密码" }]
+// })
 
 const getOrderData = async () => {
 	loading.value = true
 	// const getRes: any = await getOrderList()
 	const newRes: any = await getNewOrderList({
-		page: paginationData.currentPage
+		page: paginationData.currentPage,
+		...searchData
 	})
 	loading.value = false
 	if (newRes.code === 0) {
@@ -122,8 +123,9 @@ const handleUpdate = (row: any) => {
 const tableData = ref<any[]>([])
 const searchFormRef = ref<FormInstance | null>(null)
 const searchData = reactive({
-	username: "",
-	phone: ""
+	nickName: "",
+	phoneNumer: "",
+	_id: ''
 })
 const getTableData = () => {
 	// loading.value = true
@@ -145,20 +147,18 @@ const getTableData = () => {
 	// 	})
 }
 const handleSearch = () => {
-	if (paginationData.currentPage === 1) {
-		getTableData()
-	}
-	paginationData.currentPage = 1
+	getOrderData()
+	// if (paginationData.currentPage === 1) {
+	// 	getTableData()
+	// }
+	// paginationData.currentPage = 1
 }
-const resetSearch = () => {
+const resetSearch = async () => {
 	searchFormRef.value?.resetFields()
-	if (paginationData.currentPage === 1) {
-		getTableData()
-	}
-	paginationData.currentPage = 1
+	getOrderData()
 }
 const handleRefresh = () => {
-	getTableData()
+	getOrderData()
 }
 
 onMounted(() => {
@@ -174,11 +174,14 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 	<div class="app-container">
 		<el-card shadow="never" class="search-wrapper">
 			<el-form ref="searchFormRef" :inline="true" :model="searchData">
-				<el-form-item prop="username" label="用户名">
-					<el-input v-model="searchData.username" placeholder="请输入" />
+				<el-form-item prop="_id" label="订单编号">
+					<el-input v-model="searchData._id" placeholder="请输入" />
 				</el-form-item>
-				<el-form-item prop="phone" label="手机号">
-					<el-input v-model="searchData.phone" placeholder="请输入" />
+				<el-form-item prop="nickName" label="用户名">
+					<el-input v-model="searchData.nickName" placeholder="请输入" />
+				</el-form-item>
+				<el-form-item prop="phoneNumer" label="手机号">
+					<el-input v-model="searchData.phoneNumer" placeholder="请输入" />
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -204,6 +207,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 			<div class="table-wrapper">
 				<el-table :data="tableData">
 					<el-table-column type="selection" width="50" align="center" />
+					<el-table-column prop="_id" label="订单编号" align="center" />
 					<el-table-column prop="orderType" label="订单类型" align="center">
 						<template #default="scope">
 							<div flex>
@@ -274,7 +278,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 		</el-card>
 		<!-- 新增/修改 -->
 		<el-dialog v-model="dialogVisible" title="订单详情" @close="resetForm" width="60%">
-			<el-form ref="formRef" :model="formData" :rules="formRules" label-width="150px" label-position="left">
+			<el-form ref="formRef" :model="formData" label-width="150px" label-position="left">
 				<el-form-item prop="nickName" label="用户名及手机">
 					<span mr-5>{{ formData.nickName }}</span>
 					<span>{{ formData.phoneNumer }}</span>
@@ -290,7 +294,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 				</template>
 				<template v-if="formData.orderType == 2">
 					<el-form-item prop="sellType" label="代卖模式">
-						<span>{{ sellType[formData.sellType] }}</span>
+						<span>{{ sellTypes[formData.sellType] }}</span>
 					</el-form-item>
 					<el-form-item v-if="formData.sellType == 1" prop="sellDays" label="拍卖天数">
 						<span>{{ formData.sellDays }}</span>
