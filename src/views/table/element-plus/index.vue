@@ -13,13 +13,19 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 
 //#region 增
 const dialogVisible = ref<boolean>(false)
+const addCardDialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 let formData = reactive<Record<string, any>>({})
+let addCardData = reactive<Record<string, any>>({})
+const fileList = ref<any[]>([])
+const disabled = ref(false)
 // const formRules: FormRules = reactive({
 // 	username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
 // 	password: [{ required: true, trigger: "blur", message: "请输入密码" }]
 // })
-
+const openAddCard = () => {
+	addCardDialogVisible.value = true
+}
 const getOrderData = async () => {
 	loading.value = true
 	// const getRes: any = await getOrderList()
@@ -44,6 +50,12 @@ const getOrderData = async () => {
 	// 	})
 	// }
 }
+
+const handlePictureCardPreview = () => { }
+
+const handleRemove = () => { }
+
+const handleCreateCard = () => { }
 
 const handleCreate = async () => {
 	const { customerComment, orderStatus, _id, sellNumber } = formData
@@ -148,10 +160,6 @@ const getTableData = () => {
 }
 const handleSearch = () => {
 	getOrderData()
-	// if (paginationData.currentPage === 1) {
-	// 	getTableData()
-	// }
-	// paginationData.currentPage = 1
 }
 const resetSearch = async () => {
 	searchFormRef.value?.resetFields()
@@ -224,18 +232,19 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 						</template>
 					</el-table-column>
 					<!-- <el-table-column prop="roles" label="角色" align="center">
-							<template #default="scope">
-								<el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
-								<el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
-							</template>
-						</el-table-column> -->
+																<template #default="scope">
+																	<el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
+																	<el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
+																</template>
+															</el-table-column> -->
 					<el-table-column prop="phoneNumer" label="手机号" align="center" />
 					<el-table-column prop="gradeCompany" label="评级公司" align="center" />
 					<el-table-column prop="gradeLevel" label="评级档位" align="center" />
 					<el-table-column prop="cardImgs" label="图片" align="center">
 						<template #default="scope">
 							<div flex>
-								<img v-for="(item, index) in scope.row.fileList" w-40 h-40 :src="item?.tempFileURL" :key="index" />
+								<img v-for="(item, index) in scope.row.fileList" w-40 h-40 :src="item?.tempFileURL"
+									:key="index" />
 							</div>
 						</template>
 					</el-table-column>
@@ -258,22 +267,17 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 					<el-table-column fixed="right" label="操作" width="150" align="center">
 						<template #default="scope">
 							<!-- <span v-if="scope.row.orderStatus === 1">确认订单</span> -->
-							<el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">查看详情及编辑</el-button>
+							<el-button type="primary" text bg size="small"
+								@click="handleUpdate(scope.row)">查看详情及编辑</el-button>
 							<!-- <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button> -->
 						</template>
 					</el-table-column>
 				</el-table>
 			</div>
 			<div class="pager-wrapper">
-				<el-pagination
-					background
-					:layout="paginationData.layout"
-					:total="paginationData.total"
-					:page-size="10"
-					:currentPage="paginationData.currentPage"
-					@size-change="handleSizeChange"
-					@current-change="handleCurrentChange($event, getOrderData)"
-				/>
+				<el-pagination background :layout="paginationData.layout" :total="paginationData.total" :page-size="10"
+					:currentPage="paginationData.currentPage" @size-change="handleSizeChange"
+					@current-change="handleCurrentChange($event, getOrderData)" />
 			</div>
 		</el-card>
 		<!-- 新增/修改 -->
@@ -304,14 +308,9 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 					</el-form-item>
 				</template>
 				<el-form-item prop="cardImgs" label="图片">
-					<el-image
-						:preview-src-list="formData.fileList.map((item) => item.tempFileURL)"
-						v-for="(item, index) in formData.fileList"
-						style="width: 150px; height: 150px; margin-right: 40px"
-						mr-10
-						:key="index"
-						:src="item.tempFileURL"
-					/>
+					<el-image :preview-src-list="formData.fileList.map((item) => item.tempFileURL)"
+						v-for="(item, index) in formData.fileList" style="width: 150px; height: 150px; margin-right: 40px"
+						mr-10 :key="index" :src="item.tempFileURL" />
 				</el-form-item>
 				<el-form-item prop="createTime" label="创建时间">
 					<span>{{ formData.createTime }}</span>
@@ -321,14 +320,15 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 				</el-form-item>
 				<el-form-item prop="orderStatus" label="订单状态">
 					<el-select v-model="formData.orderStatus">
-						<el-option
-							v-for="(item, index) in orderStatusOptions"
-							:key="index"
-							:value="item.value"
-							:label="item.label"
-						/>
+						<el-option v-for="(item, index) in orderStatusOptions" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
+				<template v-if="formData.orderType == 1">
+					<el-form-item prop="cardsDetail" label="卡片详情">
+						<el-button @click="openAddCard" type="primary">添加</el-button>
+					</el-form-item>
+				</template>
 				<el-form-item v-if="formData.orderType == 2" prop="sellNumber" label="ebay上架物品编号">
 					<el-input v-model="formData.sellNumber" placeholder="请输入ebay上架物品编号" />
 				</el-form-item>
@@ -339,6 +339,31 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 			<template #footer>
 				<el-button @click="dialogVisible = false">取消</el-button>
 				<el-button type="primary" @click="handleCreate">确认</el-button>
+			</template>
+		</el-dialog>
+		<el-dialog v-model="addCardDialogVisible" title="卡片详情" width="60%">
+			<el-form ref="addCardRef" :model="addCardData" label-width="150px" label-position="left">
+				<el-form-item prop="cardName" label="卡片名称">
+					<el-input v-model="addCardData.cardName" placeholder="请输入卡片名称" />
+				</el-form-item>
+				<el-form-item prop="cardNo" label="评级编号">
+					<el-input v-model="addCardData.cardNo" placeholder="请输入评级编号" />
+				</el-form-item>
+				<el-form-item prop="cardPoint" label="评级分数">
+					<el-input v-model="addCardData.cardPoint" placeholder="请输入评级分数" />
+				</el-form-item>
+				<el-form-item prop="cardList" label="卡片图示">
+					<el-upload v-model:file-list="fileList" action="#" list-type="picture-card" :auto-upload="false"
+						:on-remove="handleRemove" :on-preview="handlePictureCardPreview">
+						<el-icon>
+							<Plus />
+						</el-icon>
+					</el-upload>
+				</el-form-item>
+			</el-form>
+			<template #footer>
+				<el-button @click="addCardDialogVisible = false">取消</el-button>
+				<el-button type="primary" @click="handleCreateCard">确认</el-button>
 			</template>
 		</el-dialog>
 	</div>
