@@ -18,6 +18,7 @@ const dialogVisible = ref<boolean>(false)
 const addCardDialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 let formData = reactive<Record<string, any>>({})
+let addCardRef = ref<FormInstance | null>(null)
 let addCardData = reactive<Record<string, any>>({})
 const uploadRef = ref<UploadInstance>()
 let singleCardImgs = ref<any[]>([])
@@ -29,8 +30,14 @@ const disabled = ref(false)
 // 	password: [{ required: true, trigger: "blur", message: "请输入密码" }]
 // })
 const openAddCard = () => {
-	addCardDialogVisible.value = true
+	// addCardData = {
+	// 	cardName: '',
+	// 	cardNo: '',
+	// 	cardPoint: ''
+	// }
+	addCardRef.value?.resetFields()
 	fileList.value = []
+	addCardDialogVisible.value = true
 }
 const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	fileList.value.push(uploadFile)
@@ -62,29 +69,41 @@ const getOrderData = async () => {
 
 const handlePictureCardPreview = () => { }
 
-const delelteSingleCards = async (item:any) => {
-	const delRes = await deleteFiles({
+const delelteSingleCards = async (item: any, index: number) => {
+	const delRes: any = await deleteFiles({
 		fileids: item.singleCardImgs.map((v: any) => {
 			return v.fileid
 		})
 	})
-	debugger
+	if (delRes.code === 0) {
+		singleDetailList.value = singleDetailList.value.filter((item, _index) => {
+			return _index !== index
+		})
+	}
 }
 
 const handleRemove = () => { }
 
-const handleCreateCard = () => {
-	fileList.value.forEach(async (item) => {
+const handleCreateCard = async () => {
+	for (let i = 0; i < fileList.value.length; i++) {
 		const formData = new FormData()
-		formData.append('file', item.raw)
-		const result:any = await uploadImg(formData)
-		if(result.code == 0) {
+		formData.append('file', fileList.value[i].raw)
+		const result: any = await uploadImg(formData)
+		if (result.code == 0) {
 			singleCardImgs.value.push(result.data)
 		}
-	})
+	}
+	// await fileList.value.forEach(async (item) => {
+	// 	const formData = new FormData()
+	// 	formData.append('file', item.raw)
+	// 	const result:any = await uploadImg(formData)
+	// 	if(result.code == 0) {
+	// 		singleCardImgs.value.push(result.data)
+	// 	}
+	// })
 	singleDetailList.value.push({
 		...addCardData,
-		singleCardImgs
+		singleCardImgs: singleCardImgs.value
 	})
 	addCardDialogVisible.value = false
 	singleCardImgs.value = []
@@ -93,7 +112,6 @@ const handleCreateCard = () => {
 const httpRequest = async (item: any) => {
 	const formData = new FormData()
 	formData.append('file', item.file)
-	debugger
 	const result = await uploadImg(formData)
 }
 
@@ -102,6 +120,7 @@ const handleCreate = async () => {
 	const updateRes: any = await updateOrder({
 		customerComment,
 		orderStatus,
+		singleDetailList: singleDetailList.value,
 		_id,
 		sellNumber
 	})
@@ -165,6 +184,9 @@ const currentUpdateId = ref<undefined | string>(undefined)
 const handleUpdate = (row: any) => {
 	row.orderStatus = row.orderStatus?.toString()
 	formData = row
+	if (row.singleDetailList) {
+		singleDetailList.value = JSON.parse(row.singleDetailList || [])
+	}
 	// formData.username = row.username
 	// formData.password = row.password
 	dialogVisible.value = true
@@ -272,11 +294,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 						</template>
 					</el-table-column>
 					<!-- <el-table-column prop="roles" label="角色" align="center">
-																		<template #default="scope">
-																			<el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
-																			<el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
-																		</template>
-																	</el-table-column> -->
+																			<template #default="scope">
+																				<el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
+																				<el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
+																			</template>
+																		</el-table-column> -->
 					<el-table-column prop="phoneNumer" label="手机号" align="center" />
 					<el-table-column prop="gradeCompany" label="评级公司" align="center" />
 					<el-table-column prop="gradeLevel" label="评级档位" align="center" />
@@ -369,11 +391,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 						<el-button @click="openAddCard" type="primary">添加</el-button>
 						<div v-if="singleDetailList?.length > 0" flex>
 							<div v-for="(item, index) in singleDetailList" class="singleCard">
-								<img :src="item.singleCardImgs[0].download_url" />
+								<img :src="item.singleCardImgs[0]?.download_url" />
 								<div>{{ item.cardName }}</div>
 								<div flex>
 									<div class="txt">查看编辑</div>
-									<div class="txt" @click="delelteSingleCards(item)">删除</div>
+									<div class="txt" @click="delelteSingleCards(item, index)">删除</div>
 								</div>
 							</div>
 						</div>
@@ -437,10 +459,12 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 	border: 1px solid gainsboro;
 	border-radius: 10px;
 	padding: 20px;
+
 	img {
 		width: 80px;
 		height: 80px;
 	}
+
 	.txt {
 		color: rgb(51, 153, 199);
 		cursor: pointer;
