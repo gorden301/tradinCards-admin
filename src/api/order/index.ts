@@ -16,7 +16,7 @@ export function getNewOrderList(data: any) {
 		// baseUrl,
 		url: "order/newOrderList",
 		method: "post",
-        data
+		data
 	})
 }
 
@@ -38,9 +38,9 @@ export function uploadImg(data: any) {
 	return request({
 		url: "order/uploadImg",
 		method: "post",
-        headers: {
-            'content-type': 'multipart/form-data'
-        },
+		headers: {
+			"content-type": "multipart/form-data"
+		},
 		data
 	})
 }

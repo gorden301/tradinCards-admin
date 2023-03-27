@@ -214,7 +214,8 @@ const searchFormRef = ref<FormInstance | null>(null)
 const searchData = reactive({
 	nickName: "",
 	phoneNumer: "",
-	_id: ""
+	_id: "",
+	orderType: ""
 })
 const getTableData = () => {
 	// loading.value = true
@@ -268,6 +269,12 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 				<el-form-item prop="phoneNumer" label="手机号">
 					<el-input v-model="searchData.phoneNumer" placeholder="请输入" />
 				</el-form-item>
+				<el-form-item prop="orderType" label="订单类型">
+					<el-select v-model="searchData.orderType">
+						<el-option :value="Number(1)" label="评级" />
+						<el-option :value="Number(2)" label="代卖" />
+					</el-select>
+				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
 					<el-button :icon="Refresh" @click="resetSearch">重置</el-button>
@@ -308,12 +315,6 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 							</div>
 						</template>
 					</el-table-column>
-					<!-- <el-table-column prop="roles" label="角色" align="center">
-																			<template #default="scope">
-																				<el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
-																				<el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
-																			</template>
-																		</el-table-column> -->
 					<el-table-column prop="phoneNumer" label="手机号" align="center" />
 					<el-table-column prop="gradeCompany" label="评级公司" align="center" />
 					<el-table-column prop="gradeLevel" label="评级档位" align="center" />
