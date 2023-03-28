@@ -32,6 +32,17 @@ export function updateOrder(data: any) {
 }
 
 /*
+    创建订单
+*/
+export function createOrders(data: any) {
+	return request({
+		url: "order/createOrder",
+		method: "post",
+		data
+	})
+}
+
+/*
     上传图片
 */
 export function uploadImg(data: any) {

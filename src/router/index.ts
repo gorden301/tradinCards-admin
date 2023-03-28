@@ -195,7 +195,7 @@ export const constantRoutes: RouteRecordRaw[] = [
 		redirect: "/hook-demo/use-fetch-select",
 		name: "HookDemo",
 		meta: {
-			title: "hook 示例",
+			title: "客户",
 			elIcon: "Menu",
 			alwaysShow: true
 		},
@@ -205,7 +205,7 @@ export const constantRoutes: RouteRecordRaw[] = [
 				component: () => import("@/views/hook-demo/use-fetch-select.vue"),
 				name: "UseFetchSelect",
 				meta: {
-					title: "useFetchSelect"
+					title: "客户列表"
 				}
 			},
 			{
