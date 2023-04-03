@@ -102,7 +102,7 @@ const handleCreate = async () => {
 				fileID: item.fileid,
 			}
 		}),
-		openid: currentOpenId.value.openid,s
+		openid: currentOpenId.value.openid,
 		nickName: currentOpenId.value.nickName,
 		avatarHttpsUrl: currentOpenId.value.avatarHttpsUrl,
 		phoneNumer: currentOpenId.value.phoneNumer,

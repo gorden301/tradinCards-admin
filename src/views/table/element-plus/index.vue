@@ -5,7 +5,7 @@ import { getOrderList, updateOrder, getNewOrderList, uploadImg, deleteFiles } fr
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox, ElLoading } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
-import { orderStatusMap, orderStatusOptions, orderType, sellTypes } from "./constant"
+import { orderStatusMap, orderStatusOptions, orderType, sellTypes, cardStatusOptions } from "./constant"
 import { formatDateTime } from "@/utils/index"
 import type { UploadInstance, UploadProps } from "element-plus"
 
@@ -67,6 +67,9 @@ const getOrderData = async () => {
 		paginationData.total = newRes.data?.total
 		tableData.value = newRes.data?.data?.map((item: any) => {
 			item.createTime = formatDateTime(item.createTime?.$date)
+			if (item.updateTime) {
+				item.updateTime = formatDateTime(item.updateTime?.$date)
+			}
 			return item
 		})
 		// paginationData.currentPage = paginationData.currentPage + 1
@@ -201,6 +204,9 @@ const handleUpdate = (row: any) => {
 	} else {
 		singleDetailList.value = []
 	}
+	if (row.fileList && typeof row.fileList == 'string') {
+		row.fileList = JSON.parse(row.fileList)
+	}
 	formData = row
 	// formData.username = row.username
 	// formData.password = row.password
@@ -333,6 +339,13 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 							</div>
 						</template>
 					</el-table-column>
+					<el-table-column prop="updateTime" label="更新时间" align="center">
+						<template #default="scope">
+							<div>
+								{{ scope.row.updateTime }}
+							</div>
+						</template>
+					</el-table-column>
 					<el-table-column prop="createTime" label="创建时间" align="center">
 						<template #default="scope">
 							<div>
@@ -420,6 +433,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 						<el-button @click="openAddCard" type="primary">添加</el-button>
 						<div v-if="singleDetailList?.length > 0" flex>
 							<div v-for="(item, index) in singleDetailList" class="singleCard" :key="index">
+								<div>第{{ index + 1 }}张</div>
 								<img :src="item.singleCardImgs[0]?.download_url" />
 								<div>{{ item.cardName }}</div>
 								<div flex>
@@ -447,8 +461,24 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 				<el-form-item prop="cardName" label="卡片名称">
 					<el-input v-model="addCardData.cardName" placeholder="请输入卡片名称" />
 				</el-form-item>
+				<el-form-item prop="cardStatus" label="卡片状态">
+					<el-select v-model="addCardData.cardStatus">
+						<el-option
+							v-for="(item, index) in cardStatusOptions"
+							:key="index"
+							:value="item.value"
+							:label="item.label"
+						/>
+					</el-select>
+				</el-form-item>
 				<el-form-item prop="cardNo" label="评级编号">
 					<el-input v-model="addCardData.cardNo" placeholder="请输入评级编号" />
+				</el-form-item>
+				<el-form-item prop="cardStoreNo" label="入库编号">
+					<el-input v-model="addCardData.cardStoreNo" placeholder="请输入入库编号" />
+				</el-form-item>
+				<el-form-item prop="cardRound" label="评级批次">
+					<el-input v-model="addCardData.cardRound" placeholder="请输入评级批次" />
 				</el-form-item>
 				<el-form-item prop="cardPoint" label="评级分数">
 					<el-input v-model="addCardData.cardPoint" placeholder="请输入评级分数" />

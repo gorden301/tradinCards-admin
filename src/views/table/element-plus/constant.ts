@@ -29,6 +29,37 @@ const orderStatusOptions = [
 	}
 ]
 
+const cardStatusOptions = [
+	{
+		value: "1",
+		label: "待评级"
+	},
+	{
+		value: "2",
+		label: "评级中"
+	},
+	{
+		value: "3",
+		label: "评级已出分正在回寄"
+	},
+	{
+		value: "4",
+		label: "评级已完成待寄出"
+	},
+	{
+		value: "5",
+		label: "评级已完成已寄出"
+	},
+	{
+		value: "6",
+		label: "卡片退回"
+	},
+	{
+		value: "7",
+		label: "转eBay代卖"
+	}
+]
+
 const orderType = {
 	1: "评级",
 	2: "代卖"
@@ -40,4 +71,4 @@ const sellTypes = {
 	3: "一口价"
 }
 
-export { orderStatusMap, orderStatusOptions, orderType, sellTypes }
+export { orderStatusMap, orderStatusOptions, orderType, sellTypes, cardStatusOptions }
