@@ -70,6 +70,12 @@ const getOrderData = async () => {
 			if (item.updateTime) {
 				item.updateTime = formatDateTime(item.updateTime?.$date)
 			}
+			if (item.fileList && typeof item.fileList == "string") {
+				item.fileList = JSON.parse(item.fileList)
+			}
+			if (item.cardImgs && typeof item.cardImgs == "string") {
+				item.cardImgs = JSON.parse(item.cardImgs)
+			}
 			return item
 		})
 		// paginationData.currentPage = paginationData.currentPage + 1
@@ -204,7 +210,7 @@ const handleUpdate = (row: any) => {
 	} else {
 		singleDetailList.value = []
 	}
-	if (row.fileList && typeof row.fileList == 'string') {
+	if (row.fileList && typeof row.fileList == "string") {
 		row.fileList = JSON.parse(row.fileList)
 	}
 	formData = row
